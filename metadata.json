@@ -1,0 +1,6 @@
+{
+  "name": "VietAdvising - US College Prep Platform",
+  "description": "Comprehensive college advising management platform for education advisors and Vietnamese high school students preparing for undergraduate study in the United States.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
