@@ -156,6 +156,8 @@ export const AdvisorWorkspace: React.FC<AdvisorWorkspaceProps> = ({
           onSaveMeeting={onSaveMeeting}
           onCreateTask={onCreateTask}
           onApplySmartUpdates={onApplySmartUpdates}
+          onNavigateTab={(tab) => setActiveTab(tab)}
+          onSaveStudent={onSaveStudent}
         />
       )}
     </div>

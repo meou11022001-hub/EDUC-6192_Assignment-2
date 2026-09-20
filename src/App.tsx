@@ -132,25 +132,53 @@ export default function App() {
     StorageService.saveStudent(updatedStudent);
     setStudents(StorageService.loadStudents());
 
-    // 2. Add audit history for each candidate
+    // 2. Add audit history for each candidate & handle tasks
     acceptedCandidates.forEach((cand, idx) => {
+      // If task was accepted as part of candidates, ensure it is saved to tasks list
+      if (cand.category === 'task' && cand.taskDetails) {
+        const newTask: Task = {
+          id: `task-smart-${Date.now()}-${idx}`,
+          studentId: updatedStudent.id,
+          title: cand.taskDetails.title,
+          description: cand.taskDetails.description,
+          owner: cand.taskDetails.owner,
+          dueDate: cand.taskDetails.dueDate,
+          status: 'Not Started',
+          createdAt: new Date().toISOString(),
+        };
+        StorageService.saveTask(newTask);
+      }
+
+      let decisionText: ChangeHistoryEntry['decision'] = 'Accepted';
+      if (cand.status === 'EditedAndAccepted') {
+        decisionText = 'Edited & Accepted';
+      } else if (cand.status === 'ClarificationQueued') {
+        decisionText = 'Clarification Queued';
+      } else if (cand.status === 'Rejected') {
+        decisionText = 'Rejected';
+      }
+
       StorageService.addChangeHistory({
         id: `hist-smart-${Date.now()}-${idx}`,
         studentId: updatedStudent.id,
         timestamp: new Date().toISOString(),
         source: 'Meeting Note Smart Extraction',
         originalNote: cand.originalNoteQuote,
+        meetingId: cand.meetingId,
+        meetingDate: cand.meetingDate,
+        meetingType: cand.meetingType,
         fieldName: cand.displayField,
         previousValue: cand.formattedCurrentValue || 'None',
         newValue:
           cand.status === 'EditedAndAccepted' && cand.advisorEditedValue
             ? String(cand.advisorEditedValue)
             : String(cand.formattedProposedValue),
-        decision: cand.status === 'EditedAndAccepted' ? 'Edited & Accepted' : 'Accepted',
+        decision: decisionText,
         updatedBy: updatedStudent.advisorName || 'Advisor',
       });
     });
 
+    setTasks(StorageService.loadTasks());
     setHistory(StorageService.loadChangeHistory());
   };
 

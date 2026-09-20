@@ -61,25 +61,38 @@ export const AdvisorOverviewTab: React.FC<AdvisorOverviewTabProps> = ({
 
   // Recent activity: combines recent history, meetings, tasks
   const recentActivities = [
-    ...history.filter((h) => h.studentId === student.id).map((h) => ({
-      id: h.id,
-      date: h.timestamp,
-      type: 'history',
-      title: `${h.source}: ${h.fieldName}`,
-      detail: `Changed from "${h.previousValue}" to "${h.newValue}"`,
-      actor: h.updatedBy,
-    })),
-    ...meetings.filter((m) => m.studentId === student.id).map((m) => ({
-      id: m.id,
-      date: m.createdAt,
-      type: 'meeting',
-      title: `Meeting Conducted: ${m.type}`,
-      detail: m.decisions || m.discussionNotes.substring(0, 100) + '...',
-      actor: m.createdBy,
-    })),
+    ...history
+      .filter((h) => h.studentId === student.id)
+      .map((h) => ({
+        id: h.id,
+        date: h.timestamp,
+        type: 'history',
+        title: `${h.source}: ${h.fieldName}`,
+        detail: `Changed from "${h.previousValue}" to "${h.newValue}"`,
+        actor: h.updatedBy,
+        causedBy:
+          h.meetingDate && h.meetingType
+            ? `Caused by meeting on ${h.meetingDate} (${h.meetingType})`
+            : undefined,
+        originalQuote: h.originalNote ? `"${h.originalNote}"` : undefined,
+        decision: h.decision,
+      })),
+    ...meetings
+      .filter((m) => m.studentId === student.id)
+      .map((m) => ({
+        id: m.id,
+        date: m.createdAt,
+        type: 'meeting',
+        title: `Meeting Conducted: ${m.type}`,
+        detail: m.decisions || m.discussionNotes.substring(0, 100) + '...',
+        actor: m.createdBy,
+        causedBy: undefined,
+        originalQuote: undefined,
+        decision: undefined,
+      })),
   ]
     .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, 5);
+    .slice(0, 6);
 
   return (
     <div className="space-y-6" id="advisor-overview-tab-content">
@@ -124,7 +137,7 @@ export const AdvisorOverviewTab: React.FC<AdvisorOverviewTabProps> = ({
                   {student.interests.possibleMajors.map((major, idx) => (
                     <span
                       key={idx}
-                      className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium text-[11px]"
+                      className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-800 font-semibold text-[11px] border border-indigo-200"
                     >
                       {major}
                     </span>
@@ -149,6 +162,63 @@ export const AdvisorOverviewTab: React.FC<AdvisorOverviewTabProps> = ({
               <span>Full Profile</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
+          </div>
+        </div>
+
+        {/* Live Synchronized Record Snapshot Strip */}
+        <div className="mt-5 pt-4 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">SAT Composite</span>
+            <span className="text-xs font-bold text-slate-900 block mt-0.5">
+              {student.academics.satScore || 'None recorded'}
+            </span>
+            <span className="text-[10px] text-emerald-600 font-medium">
+              {student.academics.status}
+            </span>
+          </div>
+
+          <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">GPA Record</span>
+            <span className="text-xs font-bold text-slate-900 block mt-0.5">
+              {student.academics.gpa || 'Pending transcript'}
+            </span>
+            <span className="text-[10px] text-slate-400 font-medium">Vietnamese Scale</span>
+          </div>
+
+          <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">English Testing</span>
+            <span className="text-xs font-bold text-slate-900 block mt-0.5">
+              {student.academics.ieltsScore ? `IELTS ${student.academics.ieltsScore}` : student.academics.toeflScore ? `TOEFL ${student.academics.toeflScore}` : 'Not tested'}
+            </span>
+            <span className="text-[10px] text-slate-400 font-medium">Proficiency</span>
+          </div>
+
+          <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Annual Budget</span>
+            <span className="text-xs font-bold text-emerald-700 block mt-0.5">
+              {student.financials.estimatedAnnualBudgetUsd
+                ? `$${student.financials.estimatedAnnualBudgetUsd.toLocaleString()} USD`
+                : 'Unspecified'}
+            </span>
+            <span className="text-[10px] text-slate-400 font-medium">Annual capacity</span>
+          </div>
+
+          <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Activities & Awards</span>
+            <span className="text-xs font-bold text-slate-900 block mt-0.5">
+              {student.activities.extracurriculars.length} ECs / {student.activities.awards.length} Honors
+            </span>
+            <span className="text-[10px] text-indigo-600 font-medium">Profile Portfolio</span>
+          </div>
+
+          <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">College Strategy</span>
+            <span className="text-xs font-bold text-slate-900 block mt-0.5">
+              {student.collegePreferences.consideredColleges.length} Colleges
+            </span>
+            <span className="text-[10px] text-teal-600 font-medium">
+              {student.collegePreferences.consideredColleges.filter(c => c.category === 'Reach').length} Reach, {student.collegePreferences.consideredColleges.filter(c => c.category === 'Target').length} Target
+            </span>
           </div>
         </div>
       </div>
@@ -438,8 +508,21 @@ export const AdvisorOverviewTab: React.FC<AdvisorOverviewTabProps> = ({
                       {new Date(act.date).toLocaleDateString()}
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-2">{act.detail}</p>
-                  <span className="text-[10px] text-indigo-600 font-medium mt-1 block">By: {act.actor}</span>
+                  <p className="text-[11px] text-slate-600 mt-0.5">{act.detail}</p>
+                  
+                  {act.causedBy && (
+                    <span className="inline-block mt-1 text-[10px] font-medium text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                      {act.causedBy}
+                    </span>
+                  )}
+
+                  {act.originalQuote && (
+                    <p className="text-[10px] text-slate-500 italic mt-1 bg-slate-50 p-1.5 rounded border border-slate-100">
+                      Excerpt: {act.originalQuote}
+                    </p>
+                  )}
+
+                  <span className="text-[10px] text-slate-400 font-medium mt-1 block">By: {act.actor}</span>
                 </div>
               </div>
             ))}

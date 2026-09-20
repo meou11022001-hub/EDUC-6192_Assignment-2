@@ -197,10 +197,25 @@ export interface StudentQuestion {
   advisorReply?: string;
 }
 
+export type SmartUpdateCategory =
+  | 'major'
+  | 'testScore'
+  | 'activity'
+  | 'award'
+  | 'budget'
+  | 'college'
+  | 'deadline'
+  | 'task'
+  | 'stage';
+
 export interface SmartUpdateCandidate {
   id: string;
   meetingId: string;
+  meetingDate?: string;
+  meetingType?: string;
+  category: SmartUpdateCategory;
   fieldKey: string;
+  destinationSection: string;
   displayField: string;
   originalNoteQuote: string;
   proposedValue: any;
@@ -209,7 +224,15 @@ export interface SmartUpdateCandidate {
   formattedCurrentValue: string;
   hasConflict: boolean;
   conflictReason?: string;
-  status: 'Pending' | 'Accepted' | 'EditedAndAccepted' | 'Rejected';
+  isTentative: boolean;
+  clarificationReason?: string;
+  taskDetails?: {
+    title: string;
+    description: string;
+    owner: TaskOwner;
+    dueDate: string;
+  };
+  status: 'Pending' | 'Accepted' | 'EditedAndAccepted' | 'Rejected' | 'ClarificationQueued';
   advisorEditedValue?: any;
   decidedAt?: string;
 }
@@ -220,10 +243,13 @@ export interface ChangeHistoryEntry {
   timestamp: string;
   source: 'Meeting Note Smart Extraction' | 'Advisor Manual Edit' | 'Student Submission' | 'Task Update';
   originalNote?: string;
+  meetingId?: string;
+  meetingDate?: string;
+  meetingType?: string;
   fieldName: string;
   previousValue: string;
   newValue: string;
-  decision: 'Accepted' | 'Edited & Accepted' | 'Rejected' | 'Updated' | 'Completed';
+  decision: 'Accepted' | 'Edited & Accepted' | 'Rejected' | 'Updated' | 'Completed' | 'Clarification Queued';
   updatedBy: string;
 }
 
